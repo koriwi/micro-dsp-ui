@@ -1,19 +1,44 @@
-import { buildSync } from "esbuild";
-import { readFileSync, rmSync, writeFileSync } from "fs";
+import fs from "fs/promises";
+import postcss from "postcss";
+import tailwindcss from "@tailwindcss/postcss";
+import autoprefixer from "autoprefixer";
+import esbuild from "esbuild";
+import { execSync } from "child_process";
 
-buildSync({
-  entryPoints: ["src/index.js"], // Your main JS file
-  bundle: true,
-  minify: true,
-  treeShaking: true,
-  format: "iife",
-  outfile: "dist/script.js",
-});
+async function build() {
+  // Build JS
+  await esbuild.build({
+    entryPoints: ["src/index.js"],
+    bundle: true,
+    minify: true,
+    treeShaking: true,
+    format: "iife",
+    outfile: "dist/script.js",
+  });
 
-let html = readFileSync("src/index.html", "utf8");
-let script = readFileSync("dist/script.js", "utf8");
-let finalHtml = html.replace("</body>", `<script>${script}</script></body>`);
+  // Process TailwindCSS
+  execSync("npx tailwindcss -o dist/style.css --minify");
+  const css = await fs.readFile("dist/style.css", "utf8");
 
-writeFileSync("dist/index.html", finalHtml);
-rmSync("dist/script.js");
-console.log("Build complete: dist/index.html");
+  // Read HTML template
+  let html = await fs.readFile("src/index.html", "utf8");
+
+  // Inline JS and CSS
+  let script = await fs.readFile("dist/script.js", "utf8");
+  let finalHtml = html
+    .replace("</head>", `<style>${css}</style></head>`)
+    .replace("</body>", `<script>${script}</script></body>`);
+
+  await fs.rm("dist", { recursive: true });
+  await fs.mkdir("dist", { recursive: true });
+
+  await fs.writeFile("dist/index.html", finalHtml);
+
+  const info = await fs.stat("./dist/index.html");
+  console.log(
+    "✅ Build complete: dist/index.html",
+    (info.size / 1024).toFixed(2) + "kB",
+  );
+}
+
+build();

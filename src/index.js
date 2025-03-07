@@ -1,52 +1,87 @@
-import {
-  CategoryScale,
-  Chart,
-  line,
-  LinearScale,
-  LineController,
-  LineElement,
-  LogarithmicScale,
-  PointElement,
-} from "chart.js";
+import { Chart } from "chart.js/auto";
 
-function lowpassCoeffs(f0, Q, sampleRate = 48000) {
+let chart = null;
+
+function lowpassCoeffs(f0, Q, order = 2, sampleRate = 48000) {
+  if (order !== 1 && order !== 2) {
+    throw new Error("Order must be 1 or 2");
+  }
+
   let omega = (2 * Math.PI * f0) / sampleRate;
   let alpha = Math.sin(omega) / (2 * Q);
 
-  let b0 = (1 - Math.cos(omega)) / 2;
-  let b1 = 1 - Math.cos(omega);
-  let b2 = (1 - Math.cos(omega)) / 2;
-  let a0 = 1 + alpha;
-  let a1 = -2 * Math.cos(omega);
-  let a2 = 1 - alpha;
+  if (order === 1) {
+    let b0 = (1 - Math.cos(omega)) / 2;
+    let b1 = 1 - Math.cos(omega);
+    let b2 = 0; // Not used in 1st order
+    let a0 = 1 + alpha;
+    let a1 = -2 * Math.cos(omega);
+    let a2 = 0; // Not used in 1st order
 
-  return {
-    b0: b0 / a0,
-    b1: b1 / a0,
-    b2: b2 / a0,
-    a1: a1 / a0,
-    a2: a2 / a0,
-  };
+    return {
+      b0: b0 / a0,
+      b1: b1 / a0,
+      b2: b2,
+      a1: a1 / a0,
+      a2: a2,
+    };
+  } else {
+    let b0 = (1 - Math.cos(omega)) / 2;
+    let b1 = 1 - Math.cos(omega);
+    let b2 = (1 - Math.cos(omega)) / 2;
+    let a0 = 1 + alpha;
+    let a1 = -2 * Math.cos(omega);
+    let a2 = 1 - alpha;
+
+    return {
+      b0: b0 / a0,
+      b1: b1 / a0,
+      b2: b2 / a0,
+      a1: a1 / a0,
+      a2: a2 / a0,
+    };
+  }
 }
 
-function highpassCoeffs(f0, Q, sampleRate = 48000) {
+function highpassCoeffs(f0, Q, order = 2, sampleRate = 48000) {
+  if (order !== 1 && order !== 2) {
+    throw new Error("Order must be 1 or 2");
+  }
+
   let omega = (2 * Math.PI * f0) / sampleRate;
   let alpha = Math.sin(omega) / (2 * Q);
 
-  let b0 = (1 + Math.cos(omega)) / 2;
-  let b1 = -(1 + Math.cos(omega));
-  let b2 = (1 + Math.cos(omega)) / 2;
-  let a0 = 1 + alpha;
-  let a1 = -2 * Math.cos(omega);
-  let a2 = 1 - alpha;
+  if (order === 1) {
+    let b0 = (1 + Math.cos(omega)) / 2;
+    let b1 = -(1 + Math.cos(omega));
+    let b2 = 0; // Not used in 1st order
+    let a0 = 1 + alpha;
+    let a1 = -2 * Math.cos(omega);
+    let a2 = 0; // Not used in 1st order
 
-  return {
-    b0: b0 / a0,
-    b1: b1 / a0,
-    b2: b2 / a0,
-    a1: a1 / a0,
-    a2: a2 / a0,
-  };
+    return {
+      b0: b0 / a0,
+      b1: b1 / a0,
+      b2: b2,
+      a1: a1 / a0,
+      a2: a2,
+    };
+  } else {
+    let b0 = (1 + Math.cos(omega)) / 2;
+    let b1 = -(1 + Math.cos(omega));
+    let b2 = (1 + Math.cos(omega)) / 2;
+    let a0 = 1 + alpha;
+    let a1 = -2 * Math.cos(omega);
+    let a2 = 1 - alpha;
+
+    return {
+      b0: b0 / a0,
+      b1: b1 / a0,
+      b2: b2 / a0,
+      a1: a1 / a0,
+      a2: a2 / a0,
+    };
+  }
 }
 
 function bellCoeffs(f0, Q, gainDB, sampleRate = 48000) {
@@ -155,48 +190,90 @@ async function main() {
   if (!graphCanvas) return;
 
   let freqGains = [];
-  for (let f = 10; f <= 20000; f *= 1.1) {
-    freqGains.push([f, 0]);
+  for (let f = 10; f <= 20000; f *= 1.2) {
+    freqGains.push([f.toFixed(0), 0]);
   }
 
-  let lpCoeffs = lowpassCoeffs(4000, 0.707);
-  let hpCoeffs = highpassCoeffs(100, 0.707);
+  let lpCoeffs = lowpassCoeffs(4000, 0.707, 2);
+  let hpCoeffs = highpassCoeffs(20, 0.707);
   let blCoeffs = bellCoeffs(500, 1, -5);
 
   freqGains = computeFrequencyResponse(freqGains, lpCoeffs);
   freqGains = computeFrequencyResponse(freqGains, hpCoeffs);
   freqGains = computeFrequencyResponse(freqGains, blCoeffs);
 
-  Chart.register(
-    LogarithmicScale,
-    LineController,
-    LineElement,
-    CategoryScale,
-    LinearScale,
-    PointElement,
-  );
-  const chart = new Chart(graphCanvas, {
-    data: { datasets: [{ data: freqGains, label: "output 1" }] },
+  chart = new Chart(graphCanvas, {
+    data: {
+      datasets: [
+        {
+          data: freqGains,
+          label: "output 1",
+          fill: true,
+          backgroundColor: "#ffffff55",
+          borderColor: "#ffffff",
+        },
+      ],
+    },
     type: "line",
     options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          labels: {
+            color: "#fff", // Legend text color
+          },
+        },
+        tooltip: {
+          backgroundColor: "rgba(0, 0, 0, 0.8)", // Tooltip background
+          titleColor: "#fff", // Tooltip title color
+          bodyColor: "#fff", // Tooltip body color
+          callbacks: {
+            title: (item) => (
+              console.log(item), item[0].parsed.x.toFixed(0) + " Hz"
+            ),
+            label: (item) => item.parsed.y.toFixed(1) + " dB",
+          },
+        },
+      },
       scales: {
         x: {
+          ticks: {
+            color: "#fff", // X-axis label color
+          },
           type: "logarithmic",
           min: 10,
+          title: { display: true, text: "Frequency (Hz)", color: "#fff" },
           max: 20000,
-          ticks: {
-            callback: (value) => value.toLocaleString(), // Format log scale
+          grid: {
+            color: "rgba(255, 255, 255, 0.1)", // X-axis grid lines
           },
         },
         y: {
+          ticks: {
+            color: "#fff", // X-axis label color
+          },
           min: -30,
           max: 30,
           type: "linear",
           axis: "y",
+          title: { display: true, text: "Gain (dB)", color: "#fff" },
+          grid: {
+            color: "rgba(255, 255, 255, 0.1)", // X-axis grid lines
+          },
+        },
+      },
+      elements: {
+        line: {
+          borderWidth: 2, // Line thickness
+        },
+        point: {
+          radius: 5, // Point radius
+          backgroundColor: "#fff", // Point color
         },
       },
     },
   });
+  chart.update();
 }
 
 main();

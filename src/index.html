@@ -1,8 +1,22 @@
-<html>
+<html class="size-full flex min-h-0">
   <head>
     <title>Micro DSP</title>
+    <style>
+      html {
+        background: black;
+      }
+    </style>
   </head>
-  <body>
-    <canvas id="graph"></canvas>
+  <body class="size-full flex flex-col min-h-0 overflow-hidden">
+    <canvas class="min-h-0" id="graph"></canvas>
+    <div
+      class="grow-1 border-white border-solid border text-white rounded-xl m-4 p-4 bg-white/5"
+    >
+      <h1 class="text-2xl">Equalizer</h1>
+      <div class="grid grid-cols-2">
+        <div>Lowpass</div>
+        <div>Highpass</div>
+      </div>
+    </div>
   </body>
 </html>

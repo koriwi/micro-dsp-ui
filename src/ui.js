@@ -1,11 +1,28 @@
+/**
+ * @param {function} createData
+ */
 export default (chart, createData) => {
-  let lpVal = document.getElementById("lp-val");
-  let lpRange = document.getElementById("lp-range");
+  let lpF = document.getElementById("lp-f");
+  let lpFRange = document.getElementById("lp-f-range");
+
+  let lpQ = document.getElementById("lp-q");
+  let lpQRange = document.getElementById("lp-q-range");
+
+  let lpOrder = document.getElementById("lp-order");
+
+  function update() {
+    chart.data.datasets[0].data = createData({
+      lpFreq: lpF.value,
+      lpQ: lpQ.value,
+      lpOrder: parseInt(lpOrder.value),
+    });
+    chart.update();
+  }
 
   /**
    * @param {number} position
    */
-  function sliderToValue(position) {
+  function toLog(position) {
     // position will be between 0 and 100
     var minp = 10;
     var maxp = 20000;
@@ -19,10 +36,11 @@ export default (chart, createData) => {
 
     return Math.exp(minv + scale * (position - minp));
   }
+
   /**
    * @param {number} position
    */
-  function valueToSlider(value) {
+  function fromLog(value) {
     // value will be between 100 and 10000000
     var minp = 10;
     var maxp = 20000;
@@ -39,25 +57,48 @@ export default (chart, createData) => {
   /**
    * @param {HTMLInputElement} valInput
    */
-  function rangeChanged(valInput) {
+  function rangeChangedLog(valInput) {
     return (e) => {
-      let value = sliderToValue(e.currentTarget.value).toFixed(0);
+      let value = toLog(e.currentTarget.value).toFixed(0);
+      console.log(value);
       valInput.value = value;
-      chart.data.datasets[0].data = createData(value);
-      chart.update();
+      update();
     };
   }
 
   /**
    * @param {HTMLInputElement} rangeInput
    */
-  function valueChanged(rangeInput) {
+  function valueChangedLog(rangeInput) {
     return (e) => {
-      rangeInput.value = valueToSlider(e.currentTarget.value);
+      rangeInput.value = fromLog(e.currentTarget.value);
+      update();
     };
   }
 
-  lpRange.addEventListener("mousemove", rangeChanged(lpVal));
-  lpRange.addEventListener("change", rangeChanged(lpVal));
-  lpVal.addEventListener("change", valueChanged(lpRange));
+  function valueChanged(input) {
+    return (e) => {
+      input.value = e.currentTarget.value;
+      update();
+    };
+  }
+
+  lpFRange.addEventListener("input", rangeChangedLog(lpF));
+  lpF.addEventListener("change", valueChangedLog(lpFRange));
+
+  lpQRange.addEventListener("input", valueChanged(lpQ));
+  lpQ.addEventListener("change", valueChanged(lpQRange));
+
+  lpOrder.addEventListener("change", (_e) => {
+    update();
+  });
+
+  // todo use initial value from function call
+  lpF.value = 1000;
+  lpFRange.value = fromLog(1000);
+
+  lpQRange.value = 0.7;
+  lpQ.value = 0.7;
+
+  lpOrder.selectedIndex = 0;
 };

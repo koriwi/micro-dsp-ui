@@ -10,18 +10,17 @@ function lowpassCoeffs(f0, Q, order = 2, sampleRate = 48000) {
   let alpha = Math.sin(omega) / (2 * Q);
 
   if (order === 1) {
-    let b0 = (1 - Math.cos(omega)) / 2;
-    let b1 = 1 - Math.cos(omega);
+    let b0 = omega / (omega + 1);
+    let b1 = b0;
     let b2 = 0; // Not used in 1st order
-    let a0 = 1 + alpha;
-    let a1 = -2 * Math.cos(omega);
+    let a1 = (omega - 1) / (omega + 1);
     let a2 = 0; // Not used in 1st order
 
     return {
-      b0: b0 / a0,
-      b1: b1 / a0,
+      b0: b0,
+      b1: b1,
       b2: b2,
-      a1: a1 / a0,
+      a1: a1,
       a2: a2,
     };
   } else {
@@ -180,22 +179,23 @@ function computeFrequencyResponse(freqGains, filterCoeffs, sampleRate = 48000) {
   return newFreqGains;
 }
 
-function qToDbPerDecade(Q) {
-  return 20 * Math.log10(Q);
-}
-
-function createData(lpFreq = 0) {
+function createData(config) {
   let freqGains = [];
   for (let f = 10; f <= 20000; f *= 1.2) {
     freqGains.push([f.toFixed(0), 0]);
   }
-  let lpCoeffs = lowpassCoeffs(lpFreq, 0.707, 2);
-  let hpCoeffs = highpassCoeffs(20, 0.707);
-  let blCoeffs = bellCoeffs(500, 1, -5);
 
-  freqGains = computeFrequencyResponse(freqGains, lpCoeffs);
+  if (config.lpOrder > 0) {
+    let lpCoeffs = lowpassCoeffs(config.lpFreq, config.lpQ, config.lpOrder);
+    freqGains = computeFrequencyResponse(freqGains, lpCoeffs);
+  }
+
+  let hpCoeffs = highpassCoeffs(10, 0.7, 2);
   freqGains = computeFrequencyResponse(freqGains, hpCoeffs);
+
+  let blCoeffs = bellCoeffs(500, 1, -5);
   freqGains = computeFrequencyResponse(freqGains, blCoeffs);
+
   return freqGains;
 }
 
@@ -209,7 +209,7 @@ async function main() {
         {
           data: [],
           label: "output 1",
-          fill: true,
+          fill: "start",
           backgroundColor: "#ffffff55",
           borderColor: "#ffffff",
         },

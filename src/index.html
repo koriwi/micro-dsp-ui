@@ -3,31 +3,76 @@
     <title>Micro DSP</title>
     <style>
       html {
+        color-scheme: dark;
+        background: black;
+      }
+
+      select option {
         background: black;
       }
     </style>
   </head>
   <body class="size-full flex flex-col min-h-0 overflow-hidden">
     <canvas class="min-h-0" id="graph"></canvas>
-    <div
-      class="grow-1 border-white border-solid border text-white rounded-xl m-4 p-4 bg-white/5"
-    >
-      <h1 class="text-2xl">Equalizer</h1>
-      <div class="grid grid-cols-2 gap-6">
-        <div class="w-full">
-          <div>Lowpass</div>
-          <div id="lp" class="w-full flex">
-            <input type="number w-24" id="lp-val" />
-            <input
-              class="flex-grow-1"
-              type="range"
-              min="10"
-              max="20000"
-              id="lp-range"
-            />
+    <div class="m-4">
+      <h1
+        class="text-2xl p-1 px-4 bg-white text-black rounded-t inline-block text-center"
+      >
+        Equalizer
+      </h1>
+      <div
+        class="grow-1 border-white border-solid border text-white rounded-xl rounded-tl-none p-4 bg-white/5"
+      >
+        <div class="grid grid-cols-2 gap-6">
+          <div>
+            <div class="p-0.5 px-2 rounded-t bg-white text-black inline-block">
+              Lowpass
+            </div>
+            <div
+              class="grid grid-cols-[1fr_1fr_4fr] gap-4 w-full border border-solid border-white rounded-sm rounded-tl-none p-4"
+            >
+              <label class="flex gap-2"> Freq (Hz):</label>
+              <input
+                class="border border-solid border-white text-right w-16 font-mono"
+                type="number"
+                id="lp-f"
+              />
+              <input
+                class="flex-grow-1"
+                type="range"
+                min="10"
+                max="20000"
+                id="lp-f-range"
+              />
+              <label class="flex flex-grow-1 gap-2"> Q-Factor:</label>
+              <input
+                class="border border-solid border-white text-right w-16 font-mono"
+                type="number"
+                id="lp-q"
+                step="0.01"
+                value="0.70"
+              />
+              <input
+                class="flex-grow-1"
+                type="range"
+                min="0"
+                max="10"
+                step="0.01"
+                id="lp-q-range"
+              />
+              <label class="flex flex-grow-1 gap-2"> Order:</label>
+              <select
+                id="lp-order"
+                class="border border-solid border-white flex-grow-1 col-span-2"
+              >
+                <option value="0">disabled</option>
+                <option value="1">1st (12 dB/oct)</option>
+                <option value="2">2nd (24 dB/oct)</option>
+              </select>
+            </div>
           </div>
+          <div>Highpass</div>
         </div>
-        <div>Highpass</div>
       </div>
     </div>
   </body>

@@ -13,8 +13,20 @@
       class="grow-1 border-white border-solid border text-white rounded-xl m-4 p-4 bg-white/5"
     >
       <h1 class="text-2xl">Equalizer</h1>
-      <div class="grid grid-cols-2">
-        <div>Lowpass</div>
+      <div class="grid grid-cols-2 gap-6">
+        <div class="w-full">
+          <div>Lowpass</div>
+          <div id="lp" class="w-full flex">
+            <input type="number w-24" id="lp-val" />
+            <input
+              class="flex-grow-1"
+              type="range"
+              min="10"
+              max="20000"
+              id="lp-range"
+            />
+          </div>
+        </div>
         <div>Highpass</div>
       </div>
     </div>

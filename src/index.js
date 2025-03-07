@@ -1,6 +1,5 @@
 import { Chart } from "chart.js/auto";
-
-let chart = null;
+import render from "./ui.js";
 
 function lowpassCoeffs(f0, Q, order = 2, sampleRate = 48000) {
   if (order !== 1 && order !== 2) {
@@ -185,28 +184,30 @@ function qToDbPerDecade(Q) {
   return 20 * Math.log10(Q);
 }
 
-async function main() {
-  const graphCanvas = document.getElementById("graph");
-  if (!graphCanvas) return;
-
+function createData(lpFreq = 0) {
   let freqGains = [];
   for (let f = 10; f <= 20000; f *= 1.2) {
     freqGains.push([f.toFixed(0), 0]);
   }
-
-  let lpCoeffs = lowpassCoeffs(4000, 0.707, 2);
+  let lpCoeffs = lowpassCoeffs(lpFreq, 0.707, 2);
   let hpCoeffs = highpassCoeffs(20, 0.707);
   let blCoeffs = bellCoeffs(500, 1, -5);
 
   freqGains = computeFrequencyResponse(freqGains, lpCoeffs);
   freqGains = computeFrequencyResponse(freqGains, hpCoeffs);
   freqGains = computeFrequencyResponse(freqGains, blCoeffs);
+  return freqGains;
+}
 
-  chart = new Chart(graphCanvas, {
+async function main() {
+  const graphCanvas = document.getElementById("graph");
+  if (!graphCanvas) return;
+
+  const chart = new Chart(graphCanvas, {
     data: {
       datasets: [
         {
-          data: freqGains,
+          data: [],
           label: "output 1",
           fill: true,
           backgroundColor: "#ffffff55",
@@ -216,6 +217,9 @@ async function main() {
     },
     type: "line",
     options: {
+      animation: {
+        duration: 100,
+      },
       responsive: true,
       plugins: {
         legend: {
@@ -273,7 +277,9 @@ async function main() {
       },
     },
   });
+  chart.data.datasets[0].data = createData(0);
   chart.update();
+  render(chart, createData);
 }
 
 main();

@@ -1,7 +1,7 @@
 /**
- * @param {function} createData
+ * @param {(config: import("chart.js").DSPConfig) => void} updateChart
  */
-export default (chart, createData) => {
+export default (updateChart) => {
   // Low pass
   let lpF = document.getElementById("lp-f");
   let lpFRange = document.getElementById("lp-f-range");
@@ -21,7 +21,7 @@ export default (chart, createData) => {
   let hpOrder = document.getElementById("hp-order");
 
   function update() {
-    chart.data.datasets[0].data = createData({
+    updateChart({
       lpFreq: lpF.value,
       lpQ: lpQ.value,
       lpOrder: parseInt(lpOrder.value),
@@ -29,7 +29,6 @@ export default (chart, createData) => {
       hpQ: hpQ.value,
       hpOrder: parseInt(hpOrder.value),
     });
-    chart.update();
   }
 
   /**

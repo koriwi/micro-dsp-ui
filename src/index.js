@@ -178,7 +178,19 @@ function computeFrequencyResponse(freqGains, filterCoeffs, sampleRate = 48000) {
   }
   return newFreqGains;
 }
+/**
+ * @typedef {Object} DSPConfig
+ * @property {number} lpFreq
+ * @property {number} lpQ
+ * @property {number} lpOrder
+ * @property {number} hpFreq
+ * @property {number} hpQ
+ * @property {number} hpOrder
+ */
 
+/**
+ * @param {DSPConfig} config
+ */
 function createData(config) {
   let freqGains = [];
   for (let f = 10; f <= 20000; f *= 1.2) {
@@ -281,7 +293,10 @@ async function main() {
   });
   chart.data.datasets[0].data = createData(0);
   chart.update();
-  render(chart, createData);
+  render((config) => {
+    chart.data.datasets[0].data = createData(config);
+    chart.update();
+  });
 }
 
 main();

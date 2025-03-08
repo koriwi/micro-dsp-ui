@@ -1,0 +1,117 @@
+---
+import XPass from "../components/XPass/index.astro";
+import Layout from "../layouts/default.astro";
+---
+
+<Layout>
+  <canvas class="min-h-0" id="graph"></canvas>
+  <div class="m-4">
+    <h1
+      class="text-2xl p-1 px-4 bg-white text-black rounded-t inline-block text-center"
+    >
+      Equalizer
+    </h1>
+    <div
+      class="grow-1 border-white border-solid border text-white rounded-xl rounded-tl-none p-4 bg-white/5"
+    >
+      <div class="grid grid-cols-2 gap-6">
+        <XPass pass="low" />
+        <XPass pass="high" />
+      </div>
+      <div class="grid grid-cols-5 gap-4">
+        <div>EQ goes here</div>
+        <div>EQ goes here</div>
+        <div>EQ goes here</div>
+        <div>EQ goes here</div>
+        <div>EQ goes here</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    import Chart from "chart.js/auto";
+    import { createData } from "../dsp.js";
+    import { eq } from "../global.js";
+
+    const graphCanvas = document.getElementById("graph") as HTMLCanvasElement;
+
+    const chart = new Chart(graphCanvas, {
+      data: {
+        datasets: [
+          {
+            data: [],
+            label: "output 1",
+            fill: "start",
+            backgroundColor: "#ffffff55",
+            borderColor: "#ffffff",
+          },
+        ],
+      },
+      type: "line",
+      options: {
+        animation: {
+          duration: 250,
+        },
+        responsive: true,
+        plugins: {
+          legend: {
+            labels: {
+              color: "#fff", // Legend text color
+            },
+          },
+          tooltip: {
+            backgroundColor: "rgba(0, 0, 0, 0.8)", // Tooltip background
+            titleColor: "#fff", // Tooltip title color
+            bodyColor: "#fff", // Tooltip body color
+            callbacks: {
+              title: (item) => (
+                console.log(item), item[0].parsed.x.toFixed(0) + " Hz"
+              ),
+              label: (item) => item.parsed.y.toFixed(1) + " dB",
+            },
+          },
+        },
+        scales: {
+          x: {
+            ticks: {
+              color: "#fff", // X-axis label color
+            },
+            type: "logarithmic",
+            min: 10,
+            title: { display: true, text: "Frequency (Hz)", color: "#fff" },
+            max: 20000,
+            grid: {
+              color: "rgba(255, 255, 255, 0.1)", // X-axis grid lines
+            },
+          },
+          y: {
+            ticks: {
+              color: "#fff", // X-axis label color
+            },
+            min: -30,
+            max: 10,
+            type: "linear",
+            axis: "y",
+            title: { display: true, text: "Gain (dB)", color: "#fff" },
+            grid: {
+              color: "rgba(255, 255, 255, 0.1)", // X-axis grid lines
+            },
+          },
+        },
+        elements: {
+          line: {
+            borderWidth: 2, // Line thickness
+          },
+          point: {
+            radius: 5, // Point radius
+            backgroundColor: "#fff", // Point color
+          },
+        },
+      },
+    });
+    window.addEventListener("update", (e) => {
+      chart.data.datasets[0].data = createData(eq.get());
+      chart.update();
+    });
+  </script>
+</Layout>

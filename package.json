@@ -2,26 +2,34 @@
   "name": "micro-dsp-ui",
   "version": "1.0.0",
   "main": "index.js",
-  "type": "module",
   "scripts": {
-    "build": "node build.js",
-    "dev": "nodemon --watch src --ext js,html,css --exec  'npm run build'"
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build && cp -r dist/* docs/",
+    "preview": "astro preview",
+    "astro": "astro",
+    "dev2": "nodemon --watch src --ext js,html,css --exec  'npm run build'"
   },
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@tailwindcss/cli": "^4.0.9",
     "@tailwindcss/postcss": "^4.0.9",
+    "@tailwindcss/vite": "^4.0.12",
     "autoprefixer": "^10.4.20",
     "chart.js": "^4.4.8",
     "esbuild-plugin-postcss": "^0.2.1",
+    "nanostores": "^0.11.4",
     "postcss": "^8.5.3",
     "postcss-cli": "^11.0.0",
-    "tailwindcss": "^4.0.9"
+    "tailwindcss": "^4.0.12"
   },
   "devDependencies": {
+    "astro": "^5.4.2",
     "esbuild": "^0.25.0",
-    "nodemon": "^3.1.9"
+    "nodemon": "^3.1.9",
+    "prettier": "^3.5.3",
+    "prettier-plugin-astro": "^0.14.1",
+    "typescript": "^5.8.2"
   }
 }

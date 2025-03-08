@@ -1,0 +1,65 @@
+---
+interface Props {
+  pass: "high"|"low"
+}
+const {pass} = Astro.props;
+console.log({pass})
+---
+<x-pass data-type={pass}>
+  <div class="p-0.5 px-2 rounded-t bg-white text-black inline-block">
+    {pass === "high" ? "Highpass": "Lowpass" }
+  </div>
+  <div
+    class="grid grid-cols-[1fr_1fr_4fr] gap-4 w-full border border-solid border-white rounded-sm rounded-tl-none p-4"
+  >
+    <label class="flex gap-2"> Freq (Hz):</label>
+    <input
+      class="border border-solid border-white text-right w-16 font-mono"
+      type="number"
+      id="p-f"
+    />
+    <input
+      class="flex-grow-1"
+      type="range"
+      step="1"
+      min="10"
+      max="20000"
+      id="p-f-range"
+    />
+    <label class="flex flex-grow-1 gap-2"> Q-Factor:</label>
+    <input
+      class="border border-solid border-white text-right w-16 font-mono"
+      type="number"
+      id="p-q"
+      step="0.01"
+      value="0.70"
+    />
+    <input
+      class="flex-grow-1"
+      type="range"
+      min="0"
+      max="10"
+      step="0.01"
+      id="p-q-range"
+    />
+    <label class="flex flex-grow-1 gap-2"> Order:</label>
+    <select
+      id="p-order"
+      class="border border-solid border-white flex-grow-1 col-span-2"
+    >
+      <option value="0">disabled</option>
+      <option value="1">1st (12 dB/oct)</option>
+      <option value="2">2nd (24 dB/oct)</option>
+    </select>
+  </div>
+</x-pass>
+<script>
+  import { attach } from "./script.js"
+
+  class XPass extends HTMLElement {
+    connectedCallback() {
+      attach(this, this.dataset.type)
+    }
+  }
+  customElements.define("x-pass", XPass)
+</script>

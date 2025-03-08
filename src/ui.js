@@ -2,6 +2,7 @@
  * @param {function} createData
  */
 export default (chart, createData) => {
+  // Low pass
   let lpF = document.getElementById("lp-f");
   let lpFRange = document.getElementById("lp-f-range");
 
@@ -10,11 +11,23 @@ export default (chart, createData) => {
 
   let lpOrder = document.getElementById("lp-order");
 
+  // High pass
+  let hpF = document.getElementById("hp-f");
+  let hpFRange = document.getElementById("hp-f-range");
+
+  let hpQ = document.getElementById("hp-q");
+  let hpQRange = document.getElementById("hp-q-range");
+
+  let hpOrder = document.getElementById("hp-order");
+
   function update() {
     chart.data.datasets[0].data = createData({
       lpFreq: lpF.value,
       lpQ: lpQ.value,
       lpOrder: parseInt(lpOrder.value),
+      hpFreq: hpF.value,
+      hpQ: hpQ.value,
+      hpOrder: parseInt(hpOrder.value),
     });
     chart.update();
   }
@@ -93,12 +106,27 @@ export default (chart, createData) => {
     update();
   });
 
+  hpFRange.addEventListener("input", rangeChangedLog(hpF));
+  hpF.addEventListener("change", valueChangedLog(hpFRange));
+
+  hpQRange.addEventListener("input", valueChanged(hpQ));
+  hpQ.addEventListener("change", valueChanged(hpQRange));
+
+  hpOrder.addEventListener("change", (_e) => {
+    update();
+  });
+
   // todo use initial value from function call
   lpF.value = 1000;
+  hpF.value = 1000;
   lpFRange.value = fromLog(1000);
+  hpFRange.value = fromLog(1000);
 
   lpQRange.value = 0.7;
+  hpQRange.value = 0.7;
   lpQ.value = 0.7;
+  hpQ.value = 0.7;
 
   lpOrder.selectedIndex = 0;
+  hpOrder.selectedIndex = 0;
 };

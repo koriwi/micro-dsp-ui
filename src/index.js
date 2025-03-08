@@ -190,8 +190,10 @@ function createData(config) {
     freqGains = computeFrequencyResponse(freqGains, lpCoeffs);
   }
 
-  let hpCoeffs = highpassCoeffs(10, 0.7, 2);
-  freqGains = computeFrequencyResponse(freqGains, hpCoeffs);
+  if (config.hpOrder > 0) {
+    let hpCoeffs = highpassCoeffs(config.hpFreq, config.hpQ, config.hpOrder);
+    freqGains = computeFrequencyResponse(freqGains, hpCoeffs);
+  }
 
   let blCoeffs = bellCoeffs(500, 1, -5);
   freqGains = computeFrequencyResponse(freqGains, blCoeffs);
@@ -218,7 +220,7 @@ async function main() {
     type: "line",
     options: {
       animation: {
-        duration: 100,
+        duration: 250,
       },
       responsive: true,
       plugins: {
@@ -257,7 +259,7 @@ async function main() {
             color: "#fff", // X-axis label color
           },
           min: -30,
-          max: 30,
+          max: 10,
           type: "linear",
           axis: "y",
           title: { display: true, text: "Gain (dB)", color: "#fff" },
